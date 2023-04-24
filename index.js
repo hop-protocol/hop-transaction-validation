@@ -1,18 +1,8 @@
 const ethers = require('ethers');
 const kms = require('@aws-sdk/client-kms')
 
-// system transactions
-// exit transactions
-// etc...
-
-const expectedAddresses = [
-
-]
-
-const expectedFunctionSigs = [
-
-]
-const expectedValue = '0x'
+let addresses = require('./validationConfig/addresses')
+let functionSignatures = require('./validationConfig/functionSignatures')
 
 // Note: The values are returned as Uint8Array. Decoding is done by the caller.
 exports.handler = async (event) => {
@@ -38,22 +28,25 @@ async function getPublicKey (keyId, kmsClient) {
 
 async function sign (keyId, kmsClient, transaction) {
   const { to, data, value } = transaction
-  // if (!to || !data || !value) {
-  //   throw new Error('Missing transaction data')
-  // }
 
-  // if (!expectedAddresses.includes(to)) {
-  //   throw new Error('Cannot send to this address')
-  // }
+  if (!to || !data || !value) {
+    throw new Error('Missing transaction data')
+  }
+  
+  addresses = addresses.map(x => x.toLowerCase())
+  functionSignatures = functionSignatures.map(x => x.toLowerCase())
 
-  // if (!expectedFunctionSigs.includes(data.slice(0, 10))) {
-  //   throw new Error('Cannot call this function')
-  // }
+  if (!addresses.includes(to.toLowerCase())) {
+    throw new Error(`Cannot send to address ${to}`)
+  }
 
-  // if (value !== expectedValue) {
-  //   throw new Error('Cannot send this value')
-  // }
+  if (!functionSignatures.includes(data.slice(0, 10))) {
+    throw new Error(`Cannot call the function ${data.slice(0, 10)}`)
+  }
 
+  if (value !== '0x') {
+    throw new Error(`Cannot send with value ${value.toString()}`)
+  }
 
   // Sign the transaction
   const unsignedTx = await ethers.utils.resolveProperties(transaction)

@@ -4,8 +4,11 @@
   "description": "Tools to add bonder validation to AWS Lambda",
   "main": "index.js",
   "scripts": {
-    "generate-validation-zip": "asdf"
+    "generate-validation-zip": "rm -rf lambdaBonderTransactionValidation.zip && zip -r lambdaBonderTransactionValidation.zip index.js validationConfig node_modules"
   },
   "author": "Hop Team (@HopProtocol)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "5.7.1"
+  }
 }

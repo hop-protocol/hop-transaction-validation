@@ -27,23 +27,30 @@ async function getPublicKey (keyId, kmsClient) {
 }
 
 async function sign (keyId, kmsClient, transaction) {
-  const { to, data, value } = transaction
-
-  if (!to || !data || !value) {
-    throw new Error('Missing transaction data')
-  }
-  
   addresses = addresses.map(x => x.toLowerCase())
   functionSignatures = functionSignatures.map(x => x.toLowerCase())
 
-  if (!addresses.includes(to.toLowerCase())) {
+  // Sanity check data arrays
+  if (!addresses || addresses.length === 0) {
+    throw new Error('Invalid addresses array')
+  }
+
+  if (!functionSignatures || functionSignatures.length === 0) {
+    throw new Error('Invalid function signatures array')
+  }
+
+  // Validate transaction data
+  const to = transaction.to.toLowerCase()
+  if (!addresses.includes(to)) {
     throw new Error(`Cannot send to address ${to}`)
   }
 
+  const data = transaction.data.toLowerCase()
   if (!functionSignatures.includes(data.slice(0, 10))) {
-    throw new Error(`Cannot call the function ${data.slice(0, 10)}`)
+    throw new Error(`Cannot send the function ${data.slice(0, 10)}`)
   }
 
+  const value = transaction.value ?? '0x'
   if (value !== '0x') {
     throw new Error(`Cannot send with value ${value.toString()}`)
   }

@@ -1,0 +1,11 @@
+{
+  "name": "lambda-bonder-transaction-validation",
+  "version": "1.0.0",
+  "description": "Tools to add bonder validation to AWS Lambda",
+  "main": "index.js",
+  "scripts": {
+    "generate-validation-zip": "asdf"
+  },
+  "author": "Hop Team (@HopProtocol)",
+  "license": "MIT"
+}

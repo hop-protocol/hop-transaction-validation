@@ -1,8 +1,8 @@
 const ethers = require('ethers');
 const kms = require('@aws-sdk/client-kms')
 
-let addresses = require('./validationConfig/addresses')
-let functionSignatures = require('./validationConfig/functionSignatures')
+const addresses = require('./validationConfig/addresses').map(x => x.toLowerCase())
+const functionSignatures = require('./validationConfig/functionSignatures').map(x => x.toLowerCase())
 
 // Note: The values are returned as Uint8Array. Decoding is done by the caller.
 exports.handler = async (event) => {
@@ -27,10 +27,7 @@ async function getPublicKey (keyId, kmsClient) {
 }
 
 async function sign (keyId, kmsClient, transaction) {
-  addresses = addresses.map(x => x.toLowerCase())
-  functionSignatures = functionSignatures.map(x => x.toLowerCase())
-
-  // Sanity check data arrays
+  // Sanity check data arrays and inputs
   if (!addresses || addresses.length === 0) {
     throw new Error('Invalid addresses array')
   }
@@ -39,19 +36,30 @@ async function sign (keyId, kmsClient, transaction) {
     throw new Error('Invalid function signatures array')
   }
 
-  // Validate transaction data
-  const to = transaction.to.toLowerCase()
-  if (!addresses.includes(to)) {
+  const { to, data } = transaction
+  if (!to) {
+    throw new Error(`Expected 'to' field`)
+  }
+
+  if (!data) {
+    throw new Error(`Expected 'data' field`)
+  }
+
+  // Validate content
+  if (!addresses.includes(to.toLowerCase())) {
     throw new Error(`Cannot send to address ${to}`)
   }
 
-  const data = transaction.data.toLowerCase()
-  if (!functionSignatures.includes(data.slice(0, 10))) {
+  if (!functionSignatures.includes(data.toLowerCase().slice(0, 10))) {
     throw new Error(`Cannot send the function ${data.slice(0, 10)}`)
   }
 
-  const value = transaction.value ?? '0x'
-  if (value !== '0x') {
+  const value = transaction.value
+  if (
+    value &&
+    value !== '0x' &&
+    !BigNumber.from(value.toString()).eq(0)
+  ) {
     throw new Error(`Cannot send with value ${value.toString()}`)
   }
 

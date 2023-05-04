@@ -4,7 +4,9 @@
   "description": "Tools to add bonder validation to AWS Lambda",
   "main": "index.js",
   "scripts": {
-    "generate-validation-zip": "rm -rf lambdaBonderTransactionValidation.zip && zip -r lambdaBonderTransactionValidation.zip index.js validationConfig node_modules"
+    "generate-validation-zip": "rm -rf lambdaBonderTransactionValidation.zip && zip -r lambdaBonderTransactionValidation.zip index.js validationConfig node_modules",
+    "generate:mainnet-dai": "node generateZip.js mainnet dai && npm run generate-validation-zip",
+    "generate:testnet-all": "node generateZip.js testnet all && npm run generate-validation-zip"
   },
   "author": "Hop Team (@HopProtocol)",
   "license": "MIT",

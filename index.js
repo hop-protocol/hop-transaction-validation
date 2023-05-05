@@ -112,7 +112,7 @@ function validateHopTxData (transaction) {
   if (
     value &&
     value !== '0x' &&
-    !BigNumber.from(value.toString()).eq(0)
+    !ethers.BigNumber.from(value.toString()).eq(0)
   ) {
     throw new Error(`Cannot send with value ${value.toString()}`)
   }
@@ -124,7 +124,7 @@ function validateTokenTxData (transaction) {
   if (
     value &&
     value !== '0x' &&
-    !BigNumber.from(value.toString()).eq(0)
+    !ethers.BigNumber.from(value.toString()).eq(0)
   ) {
     throw new Error(`Cannot send with value ${value.toString()}`)
   }

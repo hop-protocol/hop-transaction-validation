@@ -4,6 +4,10 @@ const kms = require('@aws-sdk/client-kms')
 let addresses = require('./validationConfig/addresses.json')
 let functionSignatures = require('./validationConfig/functionSignatures.json')
 
+const AllowedTokenFunctionSigs = {
+  Transfer: '0xa9059cbb',
+  Approve: '0x095ea7b3'
+}
 const ActionTypes = {
   GetPublicKey: 'getPublicKey',
   Sign: 'sign'
@@ -43,6 +47,7 @@ async function getPublicKey (keyId, kmsClient) {
 }
 
 async function sign (keyId, kmsClient, transaction) {
+  transaction = formatTransactionHexValues(transaction)
   const txType = getTxTypeFromTo(transaction.to)
   validateData(txType, transaction)
 
@@ -61,6 +66,22 @@ async function sign (keyId, kmsClient, transaction) {
   const res = await kmsClient.send(command)
 
   return res.Signature
+}
+
+function formatTransactionHexValues (transaction) {
+  if (transaction.gasLimit) {
+    transaction.gasLimit = ethers.BigNumber.from(transaction.gasLimit)
+  }
+  if (transaction.gasPrice) {
+    transaction.gasPrice = ethers.BigNumber.from(transaction.gasPrice)
+  } 
+  if (transaction.maxFeePerGas) {
+    transaction.maxFeePerGas = ethers.BigNumber.from(transaction.maxFeePerGas)
+  }
+  if(transaction.maxPriorityFeePerGas) {
+    transaction.maxPriorityFeePerGas = ethers.BigNumber.from(transaction.maxPriorityFeePerGas)
+  }
+  return transaction
 }
 
 function validateData(txType, transaction) {
@@ -102,7 +123,7 @@ function validateData(txType, transaction) {
   } else if (txType === TxTypes.OTHER) {
     validateOtherTxData(transaction)
   } else {
-    throw new Error('Invalid tx type')
+    throw new Error('Unexpected transaction type')
   }
 }
 
@@ -119,7 +140,7 @@ function validateHopTxData (transaction) {
 }
 
 function validateTokenTxData (transaction) {
-  const { value, data } = transaction
+  let { value, data } = transaction
 
   if (
     value &&
@@ -129,10 +150,24 @@ function validateTokenTxData (transaction) {
     throw new Error(`Cannot send with value ${value.toString()}`)
   }
 
-  // Only allow a transfer to known address
-  const transferRecipient = '0x' + data.slice(34,74)
-  if (!addresses[TxTypes.OTHER].includes(transferRecipient.toLowerCase())) {
-    throw new Error(`Invalid transfer recipient ${transferRecipient}`)
+  data = data.toLowerCase()
+  const tokenFunctionSig = data.slice(0, 10)
+  const spenderOrRecipient = '0x' + data.slice(34, 74)
+  if (tokenFunctionSig === AllowedTokenFunctionSigs.Approve) {
+    // If the spender of the approve function is not a known address from HOP or OTHER, throw
+    if (
+      !addresses[TxTypes.HOP].includes(spenderOrRecipient) &&
+      !addresses[TxTypes.OTHER].includes(spenderOrRecipient)
+    ) {
+      throw new Error(`Invalid  spender ${spenderOrRecipient}`)
+    }
+  } else if (tokenFunctionSig === AllowedTokenFunctionSigs.Transfer) {
+    // Only allow a transfer to known address
+    if (!addresses[TxTypes.OTHER].includes(spenderOrRecipient.toLowerCase())) {
+      throw new Error(`Invalid transfer recipient ${spenderOrRecipient}`)
+    }
+  } else {
+    throw new Error('Invalid token function signature')
   }
 }
 
@@ -159,15 +194,11 @@ function getTxTypeFromTo (to) {
   for (const type in addresses) {
     const addressesPerType = addresses[type]
     if (!addressesPerType.includes(to.toLowerCase())) continue
-
-    if (txType) {
-      throw new Error('The same address should not exist in multiple types')
-    }
     txType = type
   }
 
   if (!txType) {
-    throw new Error('Invalid tx type')
+    throw new Error('Unknown recipient')
   }
   return txType
 }

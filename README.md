@@ -15,6 +15,25 @@ npm run generate:testnet-all
 
 #### Other
 
+Expected addresses
+
+* Hop addresses
+    * Bridges (all chains)
+    * Messenger Wrappers (L1)
+    * Chain-specific addresses (L1)
+        * Gnosis Messenger
+        * Optimism Messenger
+        * Arbitrum Messenger (Outbox)
+    * Chain-specific addresses (L2)
+        * ArbRetryableTx
+* Token addresses
+    * L1 Canonical Token
+    * L2 hTokens (all chains)
+* Other addresses
+    * Self
+    * Withdrawal address (if applicable)
+
+
 Common function signatures:
 
 ```
@@ -48,4 +67,5 @@ Chain-specific
 ERC20
 
 0xa9059cbb - transfer(address,uint256)
+0x095ea7b3 - approve(address,uint256)
 ```

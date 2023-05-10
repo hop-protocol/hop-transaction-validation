@@ -1,5 +1,5 @@
 {
-  "_comment": "HOP, USDT, DAI, UNI, USDC, Chain-Specific. Linea is auto executed, so no address is supplied.",
+  "_comment": "HOP, USDT, DAI, UNI, USDC",
   "HOP": [
     "0xC7C736deFBfF0aD1CB63dB82f55f053D331B4d7C",
     "0x2E9bB44C9CB774939462eF874Fc854D8df524F13",

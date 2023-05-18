@@ -75,6 +75,9 @@ function formatTransactionHexValues (transaction) {
   if (transaction.gasPrice) {
     transaction.gasPrice = ethers.BigNumber.from(transaction.gasPrice)
   } 
+  if(transaction.value) {
+    transaction.value = ethers.BigNumber.from(transaction.value)
+  }
   if (transaction.maxFeePerGas) {
     transaction.maxFeePerGas = ethers.BigNumber.from(transaction.maxFeePerGas)
   }

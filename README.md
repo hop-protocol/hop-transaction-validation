@@ -62,6 +62,9 @@ Chain-specific
 0xf953cec7 - Polygon - receiveMessage(bytes)
 0x3f7658fd - Gnosis - executeSignatures(bytes,bytes)
 0xd7fd19dd - Optimism - relayMessage(address,address,bytes,uint256,tuple)
+0xd764ad0b - Optimism (Bedrock) - relayMessage(uint256,address,address,uint256,uint256,bytes)
+0x4870496f - Optimism - proveWithdrawalTransaction(tuple,uint256,tuple,bytes[])
+0x8c3152e9 - Optimism - finalizeWithdrawalTransaction(tuple)
 0x08635a95 - Arbitrum  - executeTransaction(bytes32[],uint256,address,address,uint256,uint256,uint256,uint256,bytes)
 
 ERC20

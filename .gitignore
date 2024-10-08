@@ -14,3 +14,4 @@ provider_calls.json
 prometheus_pass.txt
 *.txt
 node_modules
+tsconfig.tsbuildinfo

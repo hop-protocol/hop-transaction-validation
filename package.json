@@ -1,16 +1,41 @@
 {
   "name": "lambda-bonder-transaction-validation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tools to add bonder validation to AWS Lambda",
-  "main": "index.js",
+  "author": "Authereum Labs, Inc.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.12.2",
+    "pnpm": ">=9"
+  },
+  "imports": {
+    "#*": "./dist/*"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "clean": "rm -rf node_modules dist ./tsconfig.tsbuildinfo",
+    "build": "tsc -p ./tsconfig.json",
     "generate-validation-zip": "rm -rf lambdaBonderTransactionValidation.zip && zip -r lambdaBonderTransactionValidation.zip index.js validationConfig node_modules",
     "generate:mainnet-dai": "node generateZip.js mainnet dai && npm run generate-validation-zip",
     "generate:testnet-all": "node generateZip.js testnet all && npm run generate-validation-zip"
   },
-  "author": "Hop Team (@HopProtocol)",
-  "license": "MIT",
   "dependencies": {
-    "ethers": "5.7.1"
+    "ethers": "5.7.1",
+    "@aws-sdk/client-kms": "3.667.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.7.5",
+    "typescript": "5.6.2"
   }
 }

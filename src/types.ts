@@ -3,10 +3,10 @@ export enum ActionTypes {
   Sign = 'sign'
 }
 
-export enum TxTypes {
-  HOP = 'HOP',
-  TOKEN = 'TOKEN',
-  OTHER = 'OTHER'
+export enum TxType {
+  Protocol = 'protocol',
+  ERC20 = 'erc20',
+  Allowed = 'allowed'
 }
 
 export interface Event {
@@ -23,4 +23,20 @@ export interface Transaction {
   gasPrice?: string
   maxFeePerGas?: string
   maxPriorityFeePerGas?: string
+  chainId: number
+}
+
+export interface AllowlistConfig {
+  [chainId: number]: string[]
+}
+
+export interface GeneralizedConfig {
+  protocol: string[]
+  erc20: string[]
+}
+
+export interface TransactionConfig {
+  addresses: GeneralizedConfig
+  functionSignatures: GeneralizedConfig
+  allowed: AllowlistConfig
 }

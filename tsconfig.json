@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // Type Checking
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+
+    // Modules
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+
+    // Emit
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    // Language and Environment
+    "target": "es2020",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
+    // Interop Constraints
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Projects
+    "composite": true,
+
+   /**
+    * Custom config
+    */
+
+    "useUnknownInCatchVariables": false,
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "include": [
+    "src",
+    "src/**/*.json" // Required to include JSON files specifically
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
+}

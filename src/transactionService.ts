@@ -1,65 +1,73 @@
 import { utils as ethersUtils, BigNumber } from 'ethers'
 import {
-  type AllowlistConfig,
-  type Event,
-  type GeneralizedConfig,
+  type ConfigData,
+  type ConfigDataTypes,
   type Transaction,
-  type TransactionConfig,
   TxType
 } from './types.js'
 import { CONFIG } from './config/index.js'
 
+import USER_CONFIG from '../config.json' assert { type: 'json' }
+
+interface CustomData {
+  [chainId: number]: string[]
+}
 
 export class TransactionService {
-  #config: TransactionConfig
+  #configData: ConfigData
+  #customData: CustomData
 
   constructor() {
-    const aggregatedConfig: TransactionConfig = {
-      addresses: CONFIG.addresses,
-      functionSignatures: CONFIG.functionSignatures,
-      allowed: CONFIG.allowed
-    }
-    this.#config = this.#normalizeConfig(aggregatedConfig)
+    this.#configData = this.#formatDefaultConfig(CONFIG)
+    this.#customData = this.#formatCustomConfig(USER_CONFIG)
   }
 
   async signTransaction(transaction: Transaction): Promise<Buffer> {
-    const isValid = this.#isValidTransaction(transaction)
+    const formattedTx = this.#formatTransaction(transaction)
+    const isValid = this.#isValidTransaction(formattedTx)
     if (!isValid) {
       throw new Error('Invalid transaction')
     }
 
-    const formattedTx = this.#formatTransactionHexValues(transaction)
     const unsignedTx = await ethersUtils.resolveProperties(formattedTx)
     const serializedTx = ethersUtils.serializeTransaction(unsignedTx)
     const txHash = ethersUtils.keccak256(serializedTx)
     return Buffer.from(ethersUtils.arrayify(txHash))
   }
 
-  #normalizeConfig(config: TransactionConfig): TransactionConfig {
-    for (const key of Object.keys(config.addresses) as (keyof GeneralizedConfig)[]) {
+  /**
+   * Internal - format
+   */
+
+  #formatDefaultConfig(config: ConfigData): ConfigData {
+    for (const key of Object.keys(config.addresses) as (keyof ConfigDataTypes)[]) {
       config.addresses[key] = config.addresses[key].map((address: string) => address.toLowerCase())
     }
 
-    for (const key of Object.keys(config.functionSignatures) as (keyof GeneralizedConfig)[]) {
-      config.functionSignatures[key] = config.functionSignatures[key].map((signature: string) => {
-        if (signature.length !== 10) {
-          throw new Error(`Invalid function signature: ${signature}`)
-        }
-        return signature.toLowerCase()
-      })
-    }
-
-    for (const chainId of Object.keys(config.allowed)) {
-      const chainIdNum = parseInt(chainId)
-      config.allowed[chainIdNum] = config.allowed[chainIdNum]!.map((address: string) => address.toLowerCase())
+    for (const key of Object.keys(config.functionSignatures) as (keyof ConfigDataTypes)[]) {
+      config.functionSignatures[key] = config.functionSignatures[key].map((signature: string) => signature.toLowerCase())
     }
 
     return config
   }
 
-  #formatTransactionHexValues(transaction: Transaction): Transaction {
+  #formatCustomConfig(config: CustomData): CustomData {
+    for (const chainId of Object.keys(config)) {
+      const chainIdNum = parseInt(chainId)
+      config[chainIdNum] = config[chainIdNum]!.map((address: string) => address.toLowerCase())
+    }
+
+    return config
+  }
+
+  #formatTransaction(transaction: Transaction): Transaction {
     const formattedTx = { ...transaction }
 
+    // Lowercase
+    formattedTx.to = transaction.to.toLowerCase()
+    formattedTx.data = transaction.data?.toLowerCase()
+
+    // Hex Values
     if (transaction.gasLimit) formattedTx.gasLimit = BigNumber.from(transaction.gasLimit).toHexString()
     if (transaction.gasPrice) formattedTx.gasPrice = BigNumber.from(transaction.gasPrice).toHexString()
     if (transaction.value) formattedTx.value = BigNumber.from(transaction.value).toHexString()
@@ -70,11 +78,11 @@ export class TransactionService {
   }
 
   /**
-   * Validation
+   * Internal - Validation
    */
 
   #isValidTransaction (transaction: Transaction): boolean {
-    const txType = this.#determineTxType(transaction.to.toLowerCase())
+    const txType = this.#determineTxType(transaction.to)
 
     switch (txType) {
       case TxType.Protocol:
@@ -83,7 +91,7 @@ export class TransactionService {
       case TxType.ERC20:
         return this.#isValidERC20Tx(transaction)
 
-      case TxType.Allowed:
+      case TxType.Native:
         return this.#isValidNativeTransferTx(transaction)
 
       default:
@@ -92,15 +100,15 @@ export class TransactionService {
   }
 
   #determineTxType (to: string): TxType {
-    for (const [type, addresses] of Object.entries(this.#config.addresses)) {
-      if (addresses.includes(to.toLowerCase())) {
+    for (const [type, addresses] of Object.entries(this.#configData.addresses)) {
+      if (addresses.includes(to)) {
         return type as TxType
       }
     }
 
-    for (const [, addresses] of Object.entries(this.#config.allowed)) {
-      if (addresses.includes(to.toLowerCase())) {
-        return TxType.Allowed
+    for (const [, addresses] of Object.entries(this.#customData)) {
+      if (addresses.includes(to)) {
+        return TxType.Native
       }
     }
 
@@ -116,13 +124,13 @@ export class TransactionService {
       return false
     }
 
-    if (!this.#config.addresses[TxType.Protocol].includes(to.toLowerCase())) {
+    if (!this.#configData.addresses[TxType.Protocol].includes(to)) {
       console.log(`Invalid ERC20 contract: ${to}`)
       return false
     }
 
-    const functionSignature = data.slice(0, 10).toLowerCase()
-    if (!this.#config.functionSignatures[TxType.Protocol].includes(functionSignature)) {
+    const functionSignature = data.slice(0, 10)
+    if (!this.#configData.functionSignatures[TxType.Protocol].includes(functionSignature)) {
       console.log(`Unknown function signature: ${functionSignature}`)
       return false
     }
@@ -144,7 +152,7 @@ export class TransactionService {
       return false
     }
 
-    if (!this.#config.addresses[TxType.ERC20].includes(to.toLowerCase())) {
+    if (!this.#configData.addresses[TxType.ERC20].includes(to)) {
       console.log(`Invalid ERC20 contract: ${to}`)
       return false
     }
@@ -159,8 +167,8 @@ export class TransactionService {
 
   #isValidERC20Recipient = (data: string, chainId: number): boolean => {
     // TODO: More native recipient retrieval with ethers decoder
-    const tokenFunctionSig = data.toLowerCase().slice(0, 10)
-    const spenderOrRecipient = '0x' + data.toLowerCase().slice(34, 74)
+    const tokenFunctionSig = data.slice(0, 10)
+    const spenderOrRecipient = '0x' + data.slice(34, 74)
 
     const ERC20FunctionSignatures = {
       Approve: '0x095ea7b3',
@@ -168,9 +176,9 @@ export class TransactionService {
     }
     let allowedAddresses: string[] | undefined
     if (tokenFunctionSig === ERC20FunctionSignatures.Approve) {
-      allowedAddresses = this.#config.addresses[TxType.Protocol]
+      allowedAddresses = this.#configData.addresses[TxType.Protocol]
     } else if (tokenFunctionSig === ERC20FunctionSignatures.Transfer) {
-      allowedAddresses = this.#config.allowed[chainId]
+      allowedAddresses = this.#customData[chainId]
     } else {
       console.log(`Unknown function signature: ${tokenFunctionSig}`)
       return false
@@ -211,7 +219,7 @@ export class TransactionService {
       return false
     }
 
-    const allowedAddresses = this.#config.allowed[chainId]
+    const allowedAddresses = this.#customData[chainId]
     if (
       !allowedAddresses ||
       allowedAddresses.length === 0
@@ -220,12 +228,11 @@ export class TransactionService {
       return false
     }
     
-    if (!allowedAddresses.includes(to.toLowerCase())) {
+    if (!allowedAddresses.includes(to)) {
       console.log(`Invalid recipient: ${to}`)
       return false
     }
 
     return true
   }
-
 }

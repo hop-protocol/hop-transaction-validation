@@ -1,6 +1,6 @@
-import type { GeneralizedConfig } from "../types.js"
+import type { ConfigDataTypes } from "../types.js"
 
-export const ADDRESSES: GeneralizedConfig = {
+export const ADDRESSES: ConfigDataTypes = {
   protocol: [
     '0x3d4Cc8A61c7528Fd86C55cfe061a78dCBA48EDd1', // DAI - Ethereum
     '0x0460352b91D7CF42B0E1C1c30f06B602D9ef2238', // DAI - Gnosis

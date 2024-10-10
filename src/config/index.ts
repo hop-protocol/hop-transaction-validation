@@ -1,10 +1,8 @@
 import { ADDRESSES } from './addresses.js'
 import { FUNCTION_SIGNATURES } from './functionSignatures.js'
-import type { TransactionConfig } from '../types.js'
-import USER_CONFIG from '../../config.json' assert { type: 'json' }
+import type { ConfigData } from '../types.js'
 
-export const CONFIG: TransactionConfig = {
+export const CONFIG: ConfigData = {
   addresses: ADDRESSES,
-  functionSignatures: FUNCTION_SIGNATURES,
-  allowed: USER_CONFIG
+  functionSignatures: FUNCTION_SIGNATURES
 }

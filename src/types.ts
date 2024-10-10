@@ -1,12 +1,10 @@
+/**
+ * AWS
+ */
+
 export enum ActionTypes {
   GetPublicKey = 'getPublicKey',
   Sign = 'sign'
-}
-
-export enum TxType {
-  Protocol = 'protocol',
-  ERC20 = 'erc20',
-  Allowed = 'allowed'
 }
 
 export interface Event {
@@ -15,9 +13,19 @@ export interface Event {
   transaction?: Transaction
 }
 
+/**
+ * Transaction
+ */
+
+export enum TxType {
+  Protocol = 'protocol',
+  ERC20 = 'erc20',
+  Native = 'native'
+}
+
 export interface Transaction {
   to: string
-  data: string
+  data?: string
   value?: string
   gasLimit?: string
   gasPrice?: string
@@ -26,17 +34,16 @@ export interface Transaction {
   chainId: number
 }
 
-export interface AllowlistConfig {
-  [chainId: number]: string[]
-}
+/**
+ * Config
+ */
 
-export interface GeneralizedConfig {
+export interface ConfigDataTypes {
   protocol: string[]
   erc20: string[]
 }
 
-export interface TransactionConfig {
-  addresses: GeneralizedConfig
-  functionSignatures: GeneralizedConfig
-  allowed: AllowlistConfig
+export interface ConfigData {
+  addresses: ConfigDataTypes
+  functionSignatures: ConfigDataTypes
 }

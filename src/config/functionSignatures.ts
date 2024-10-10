@@ -1,6 +1,6 @@
-import type { GeneralizedConfig } from "../types.js"
+import type { ConfigDataTypes } from "../types.js"
 
-export const FUNCTION_SIGNATURES: GeneralizedConfig = {
+export const FUNCTION_SIGNATURES: ConfigDataTypes = {
   protocol: [
     '0x8d8798bf', // bondTransferRoot(bytes32,uint256,uint256)	
     '0x23c452cd', // bondWithdrawal(address,uint256,bytes32,uint256)	
@@ -14,12 +14,12 @@ export const FUNCTION_SIGNATURES: GeneralizedConfig = {
     '0xadc9772e', // stake(address,uint256)
     '0x2e17de78', // unstake(uint256)
     '0x0f7aadb7', // withdraw(address,uint256,bytes32,uint256,uint256,uint256,bytes32,uint256,uint256,bytes32[],uint256)
-    '0x8e58736f', // ???
+    '0x8e58736f', // confirmRoots(bytes32[],uint256[],uint256[],uint256[])
     '0xeda1122c', // redeem(bytes32)
     '0xf953cec7', // receiveMessage(bytes)
     '0x3f7658fd', // executeSignatures(bytes,bytes)
     '0xd7fd19dd', // relayMessage(address,address,bytes,uint256,(bytes32,(uint256,bytes32,uint256,uint256,bytes),(uint256,bytes32[]),bytes,bytes))
-    '0x08635a95', // ???
+    '0x08635a95', // executeTransaction(bytes32[],uint256,address,address,uint256,uint256,uint256,uint256,bytes)
     '0xd764ad0b', // relayMessage(uint256,address,address,uint256,uint256,bytes)
     '0x4870496f', // proveWithdrawalTransaction((uint256,address,address,uint256,uint256,bytes),uint256,(bytes32,bytes32,bytes32,bytes32),bytes[])
     '0x8c3152e9', // finalizeWithdrawalTransaction((uint256,address,address,uint256,uint256,bytes))

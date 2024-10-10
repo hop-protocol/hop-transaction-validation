@@ -23,7 +23,7 @@
     "preinstall": "npx only-allow pnpm",
     "clean": "rm -rf node_modules dist ./tsconfig.tsbuildinfo",
     "build": "tsc -p ./tsconfig.json",
-    "generate-validation-zip": "rm -rf lambdaBonderTransactionValidation.zip dist && esbuild ./src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js && cd ./dist && zip -r lambdaBonderTransactionValidation.zip index.js* && mv ./lambdaBonderTransactionValidation.zip ../ && cd .."
+    "generate": "rm -rf lambdaBonderTransactionValidation.zip dist && esbuild ./src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js && cd ./dist && zip -r lambdaBonderTransactionValidation.zip index.js* && mv ./lambdaBonderTransactionValidation.zip ../ && cd .."
   },
   "dependencies": {
     "ethers": "5.7.1",

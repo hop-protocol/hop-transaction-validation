@@ -1,7 +1,7 @@
 {
-  "name": "lambda-bonder-transaction-validation",
+  "name": "hop-transaction-validation",
   "version": "1.0.1",
-  "description": "Tools to add bonder validation to AWS Lambda",
+  "description": "Tools to validation transactions within the Hop ecosystem",
   "author": "Authereum Labs, Inc.",
   "license": "MIT",
   "private": true,
@@ -23,7 +23,7 @@
     "preinstall": "npx only-allow pnpm",
     "clean": "rm -rf node_modules dist ./tsconfig.tsbuildinfo",
     "build": "tsc -p ./tsconfig.json",
-    "generate": "rm -rf lambdaBonderTransactionValidation.zip dist && esbuild ./src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js && cd ./dist && zip -r lambdaBonderTransactionValidation.zip index.js* && mv ./lambdaBonderTransactionValidation.zip ../ && cd .."
+    "generate-zip": "rm -rf transactionValidation.zip dist && esbuild ./src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js && cd ./dist && zip -r transactionValidation.zip index.js* && mv ./transactionValidation.zip ../ && cd .."
   },
   "dependencies": {
     "ethers": "5.7.1",

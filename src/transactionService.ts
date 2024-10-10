@@ -5,21 +5,26 @@ import {
   type Transaction,
   TxType
 } from './types.js'
-import { CONFIG } from './config/index.js'
+import { CONFIG_DATA } from './config/index.js'
 
-import USER_CONFIG from '../config.json' assert { type: 'json' }
+import CUSTOM_DATA from '../config.json' assert { type: 'json' }
 
 interface CustomData {
   [chainId: number]: string[]
 }
+
+// Future work
+// * An address cannot currently exist in multiple sections at once (protocol, erc20, native). It should be able to.
+// * More modular validation of other tx values, like max gas price, etc. (EDIT: This might be a feature of a signer, not validator).
+// * Tests
 
 export class TransactionService {
   #configData: ConfigData
   #customData: CustomData
 
   constructor() {
-    this.#configData = this.#formatDefaultConfig(CONFIG)
-    this.#customData = this.#formatCustomConfig(USER_CONFIG)
+    this.#configData = this.#formatDefaultConfigData(CONFIG_DATA)
+    this.#customData = this.#formatCustomConfigData(CUSTOM_DATA)
   }
 
   async signTransaction(transaction: Transaction): Promise<Buffer> {
@@ -39,25 +44,28 @@ export class TransactionService {
    * Internal - format
    */
 
-  #formatDefaultConfig(config: ConfigData): ConfigData {
-    for (const key of Object.keys(config.addresses) as (keyof ConfigDataTypes)[]) {
-      config.addresses[key] = config.addresses[key].map((address: string) => address.toLowerCase())
+  #formatDefaultConfigData(config: ConfigData): ConfigData {
+    const formattedConfigData = { ...config }
+
+    for (const key of Object.keys(formattedConfigData.addresses) as (keyof ConfigDataTypes)[]) {
+      formattedConfigData.addresses[key] = formattedConfigData.addresses[key].map((address: string) => address.toLowerCase())
     }
 
-    for (const key of Object.keys(config.functionSignatures) as (keyof ConfigDataTypes)[]) {
-      config.functionSignatures[key] = config.functionSignatures[key].map((signature: string) => signature.toLowerCase())
+    for (const key of Object.keys(formattedConfigData.functionSignatures) as (keyof ConfigDataTypes)[]) {
+      formattedConfigData.functionSignatures[key] = formattedConfigData.functionSignatures[key].map((signature: string) => signature.toLowerCase())
     }
 
-    return config
+    return formattedConfigData
   }
 
-  #formatCustomConfig(config: CustomData): CustomData {
-    for (const chainId of Object.keys(config)) {
-      const chainIdNum = parseInt(chainId)
-      config[chainIdNum] = config[chainIdNum]!.map((address: string) => address.toLowerCase())
+  #formatCustomConfigData(config: CustomData): CustomData {
+    const formattedCustomData: CustomData = {}
+
+    for (const [chainId, addresses] of Object.entries(config)) {
+      formattedCustomData[Number(chainId)] = addresses.map((addr: string) => addr.toLowerCase())
     }
 
-    return config
+    return formattedCustomData
   }
 
   #formatTransaction(transaction: Transaction): Transaction {
@@ -106,7 +114,7 @@ export class TransactionService {
       }
     }
 
-    for (const [, addresses] of Object.entries(this.#customData)) {
+    for (const addresses of Object.values(this.#customData)) {
       if (addresses.includes(to)) {
         return TxType.Native
       }
@@ -170,6 +178,7 @@ export class TransactionService {
     const tokenFunctionSig = data.slice(0, 10)
     const spenderOrRecipient = '0x' + data.slice(34, 74)
 
+    // TODO: Not hardcoded
     const ERC20FunctionSignatures = {
       Approve: '0x095ea7b3',
       Transfer: '0xa9059cbb'
@@ -184,10 +193,7 @@ export class TransactionService {
       return false
     }
 
-    if (
-      !allowedAddresses ||
-      allowedAddresses.length === 0
-    ) {
+    if (!allowedAddresses || allowedAddresses.length === 0) {
       console.log(`Chain ID ${chainId} has no allowed recipients`)
       return false
     }
@@ -220,10 +226,7 @@ export class TransactionService {
     }
 
     const allowedAddresses = this.#customData[chainId]
-    if (
-      !allowedAddresses ||
-      allowedAddresses.length === 0
-    ) {
+    if (!allowedAddresses || allowedAddresses.length === 0) {
       console.log(`Chain ID ${chainId} has no allowed recipients`)
       return false
     }

@@ -1,5 +1,5 @@
-import { KMSService } from './KMSService.js'
-import { TransactionService } from './transactionService.js'
+import { KMSService } from './signing/KMSService.js'
+import { TransactionService } from './transaction/transactionService.js'
 import { type Event, ActionTypes } from './types.js'
 
 // The method name `handler` is required for lambda function

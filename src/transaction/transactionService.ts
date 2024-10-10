@@ -2,12 +2,12 @@ import { utils as ethersUtils, BigNumber } from 'ethers'
 import {
   type ConfigData,
   type ConfigDataTypes,
-  type Transaction,
   TxType
 } from './types.js'
+import type { Transaction } from '../types.js'
 import { CONFIG_DATA } from './config/index.js'
 
-import CUSTOM_DATA from '../config.json' assert { type: 'json' }
+import CUSTOM_DATA from '../../config.json' assert { type: 'json' }
 
 interface CustomData {
   [chainId: number]: string[]
